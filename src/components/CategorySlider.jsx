@@ -39,7 +39,7 @@ export default function CategorySlider({ categories, selected, onSelect }) {
           <CategoryCard
             key={cat.id}
             category={cat}
-            active={selected === cat.id}
+            active={selected === cat.name}
             onSelect={onSelect}
           />
         ))}

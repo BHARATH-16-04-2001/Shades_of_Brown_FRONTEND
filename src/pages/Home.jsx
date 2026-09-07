@@ -157,30 +157,7 @@ function Hero() {
             }}
             className="absolute inset-0 flex items-center justify-center"
           >
-            <div className="relative w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] animate-floaty">
-              <div className="absolute inset-0 rounded-blob bg-clay/25 blur-sm" />
-
-              <img
-                src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=700&q=80&auto=format&fit=crop"
-                alt="Freshly poured cappuccino with latte art"
-                className="relative w-full h-full object-cover rounded-blob shadow-soft"
-              />
-
-              <span className="absolute -top-4 left-1/2 -translate-x-1/2 flex gap-2">
-                <span
-                  className="w-1.5 h-6 rounded-full bg-espresso/10 animate-steam"
-                  style={{ animationDelay: "0s" }}
-                />
-                <span
-                  className="w-1.5 h-7 rounded-full bg-espresso/10 animate-steam"
-                  style={{ animationDelay: "0.4s" }}
-                />
-                <span
-                  className="w-1.5 h-5 rounded-full bg-espresso/10 animate-steam"
-                  style={{ animationDelay: "0.8s" }}
-                />
-              </span>
-            </div>
+           
           </motion.div>
 
           <motion.span
@@ -210,7 +187,7 @@ function Hero() {
 export default function Home() {
   const [categories, setCategories] = useState([])
   const [menuItems, setMenuItems] = useState([])
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedCategory, setSelectedCategory] = useState('All')
   const [status, setStatus] = useState('loading') // loading | ready | error
 
   useEffect(() => {
@@ -236,7 +213,7 @@ export default function Home() {
   }, [])
 
   const filteredItems = useMemo(() => {
-    if (selectedCategory === 'all') return menuItems
+    if (selectedCategory === 'All') return menuItems
     return menuItems.filter((item) => item.category === selectedCategory)
   }, [menuItems, selectedCategory])
 

@@ -5,7 +5,7 @@ import { LayoutGrid } from 'lucide-react'
 export default function CategoryCard({ category, active, onSelect }) {
   return (
     <button
-      onClick={() => onSelect(category.id)}
+      onClick={() => onSelect(category.name)}
       aria-pressed={active}
       className="shrink-0 flex flex-col items-center gap-2 group focus-visible:outline-none"
     >

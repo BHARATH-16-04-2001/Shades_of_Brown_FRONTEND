@@ -64,7 +64,7 @@ function CartRow({ item }) {
 }
 
 export default function Cart() {
-  const { items, subtotal, tax, total } = useCart()
+  const { items, subtotal, cgst, sgst, totalGst, total } = useCart()
 
   return (
     <section className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
@@ -106,8 +106,16 @@ export default function Cart() {
                 <span>{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Taxes</span>
-                <span>{formatPrice(tax)}</span>
+                <span>CGST</span>
+                <span>{formatPrice(cgst)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>SGST</span>
+                <span>{formatPrice(sgst)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total GST</span>
+                <span>{formatPrice(totalGst)}</span>
               </div>
             </div>
             <div className="flex justify-between font-semibold text-espresso mt-4 pt-4 border-t border-line">
