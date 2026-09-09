@@ -18,7 +18,8 @@ export async function syncCart(cartItems) {
 // TODO: Replace with actual Django API endpoint for checkout/order creation.
 export async function checkout(payload) {
   try {
-    const { data } = await api.post('/orders/', payload)
+    const { data } = await api.post('orders/checkout/', payload)
+    console.log("cartService checkout response:", data)
     return data
   } catch (err) {
     console.warn('[cartService] Checkout endpoint not available yet:', err.message)

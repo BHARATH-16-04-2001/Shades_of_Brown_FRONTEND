@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { formatPrice } from '../utils/format'
 import EmptyState from '../components/EmptyState'
+import CheckoutModal from '../components/CheckoutModal'
 
 function CartRow({ item }) {
   const { increase, decrease, remove } = useCart()
@@ -65,6 +66,7 @@ function CartRow({ item }) {
 
 export default function Cart() {
   const { items, subtotal, cgst, sgst, totalGst, total } = useCart()
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
 
   return (
     <section className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
@@ -122,12 +124,17 @@ export default function Cart() {
               <span>Total</span>
               <span>{formatPrice(total)}</span>
             </div>
-            <button className="w-full mt-6 py-3.5 rounded-full bg-coffee text-offwhite font-medium hover:bg-clayDark transition-colors shadow-soft">
+            <button
+              onClick={() => setCheckoutOpen(true)}
+              className="w-full mt-6 py-3.5 rounded-full bg-coffee text-offwhite font-medium hover:bg-clayDark transition-colors shadow-soft"
+            >
               Proceed
             </button>
           </motion.aside>
         </div>
       )}
+
+      <CheckoutModal open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
     </section>
   )
 }

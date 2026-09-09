@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    allowedHosts: ['gratify-handwoven-spore.ngrok-free.dev'],
   },
 })

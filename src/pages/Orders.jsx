@@ -55,6 +55,7 @@ function OrderCard({ order, index }) {
 export default function Orders() {
   const [orders, setOrders] = useState([])
   const [status, setStatus] = useState('loading')
+  const [orderToken] = useState(() => localStorage.getItem('orderToken'))
 
   useEffect(() => {
     let cancelled = false
@@ -72,6 +73,18 @@ export default function Orders() {
       cancelled = true
     }
   }, [])
+
+    useOrderSocket(orderToken, (message) => {
+    if (message.type !== 'order_status_update') return
+
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === message.order_id ? { ...o, status: message.status } : o
+      )
+    )
+    setJustUpdatedId(message.order_id)
+    window.setTimeout(() => setJustUpdatedId(null), 2000)
+  })
 
   return (
     <section className="max-w-4xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
