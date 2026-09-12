@@ -4,6 +4,7 @@ import { getOrders } from '../services/orderService'
 import { formatDate, formatPrice } from '../utils/format'
 import LoadingSpinner from '../components/LoadingSpinner'
 import EmptyState from '../components/EmptyState'
+import { useOrderSocket } from '../hooks/useOrderSocket'
 
 const statusStyles = {
   Pending: 'bg-line text-coffee',
@@ -24,8 +25,8 @@ function OrderCard({ order, index }) {
     >
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
-          <p className="font-display text-lg text-espresso">Order #{order.id}</p>
-          <p className="text-xs text-coffee/50 mt-0.5">{formatDate(order.placedAt)}</p>
+          <p className="font-display text-lg text-espresso">Order #{order.order_number}</p>
+          <p className="text-xs text-coffee/50 mt-0.5">{formatDate(order.created_at)}</p>
         </div>
         <span
           className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium ${statusStyles[order.status] || 'bg-line text-coffee'}`}
@@ -37,7 +38,7 @@ function OrderCard({ order, index }) {
       <ul className="text-sm text-coffee/70 space-y-1 mb-4">
         {order.items.map((it, i) => (
           <li key={i}>
-            {it.qty} × {it.name}
+            {it.quantity} × {it.food_name} <span className="float-right">{formatPrice(it.total_price)}</span>
           </li>
         ))}
       </ul>
@@ -57,12 +58,14 @@ export default function Orders() {
   const [status, setStatus] = useState('loading')
   const [orderToken] = useState(() => localStorage.getItem('orderToken'))
 
+
+
   useEffect(() => {
     let cancelled = false
     getOrders()
       .then((data) => {
         if (cancelled) return
-        setOrders(data)
+        setOrders(data.orders || [])
         setStatus('ready')
       })
       .catch(() => {
