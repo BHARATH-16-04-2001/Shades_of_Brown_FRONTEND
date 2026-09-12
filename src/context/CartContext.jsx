@@ -82,7 +82,7 @@ export function CartProvider({ children }) {
   useEffect(() => {
     try {
       localStorage.setItem(
-        CART_STORAGE_KEY,
+        CART_STORAGE_KEY, 
         JSON.stringify(items)
       )
     } catch (error) {

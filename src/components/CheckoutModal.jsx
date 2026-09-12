@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 import { formatPrice } from '../utils/format'
 import { checkout } from '../services/cartService'
 
-const initialForm = { name: '', tableNumber: '', phone: '' }
+const initialForm = { name: localStorage.getItem('customerName') || '', tableNumber: '', phone: localStorage.getItem('customerPhone') || '' }
 
 const inputClass =
   'w-full rounded-xl border border-line bg-cream px-4 py-3 pl-10 text-[15px] text-espresso placeholder:text-coffee/40 outline-none focus:border-clay transition-colors'
@@ -64,9 +64,11 @@ export default function CheckoutModal({ open, onClose }) {
       })
       // Backend returns a JWT encoding the phone number — stash it so the
       // Orders page can open a private, authenticated socket connection.
-      if (response?.token) {
+      if (response) {
         localStorage.setItem('orderToken', response.token)
-        localStorage.setItem('orderPhone', form.phone)
+        localStorage.setItem('customerId', response.customerId)
+        localStorage.setItem('customerName', response.customerName)
+        localStorage.setItem('customerPhone', response.customerPhone)
       }
     } catch (err) {
       // Backend not wired up yet — proceed with a local confirmation anyway.
