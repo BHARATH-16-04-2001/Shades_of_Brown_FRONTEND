@@ -1,131 +1,227 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from "react";
 
 const WS_BASE_URL =
-  import.meta.env.VITE_WS_BASE_URL || 'ws://127.0.0.1:8000/ws'
+  import.meta.env.VITE_WS_BASE_URL ||
+  "ws://127.0.0.1:8000/ws";
 
-const ENCRYPTED_PHONE_KEY = 'encryptedPhone'
+const ORDER_TOKEN_KEY = "orderToken";
 
 /**
  * Customer private order-status WebSocket.
  *
- * The encryptedPhone is stored in localStorage after checkout.
- * The backend should use this encryptedPhone to put the socket
- * connection into the customer's private group.
+ * The token is stored in localStorage after checkout.
  *
- * Usage:
+ * Backend:
  *
- * useOrderSocket((data) => {
- *   console.log('Order update:', data)
- * })
+ * ws://127.0.0.1:8000/ws/orders/?token=JWT
  */
-export function useOrderSocket(onMessage) {
-  const onMessageRef = useRef(onMessage)
+export function useOrderSocket(
+  onMessage
+) {
+  const onMessageRef =
+    useRef(onMessage);
 
-  // Always keep the latest callback
+  /*
+   * Always keep latest callback
+   */
   useEffect(() => {
-    onMessageRef.current = onMessage
-  }, [onMessage])
+    onMessageRef.current =
+      onMessage;
+  }, [onMessage]);
 
   useEffect(() => {
-    // Get encrypted phone from localStorage
-    const encryptedPhone = localStorage.getItem(ENCRYPTED_PHONE_KEY)
+    /*
+     * Get customer order token
+     */
+    const orderToken =
+      localStorage.getItem(
+        ORDER_TOKEN_KEY
+      );
 
-    // No order/customer information yet
-    if (!encryptedPhone) {
+    if (!orderToken) {
       console.log(
-        '[useOrderSocket] No encryptedPhone found. Socket not started.'
-      )
-      return undefined
+        "[useOrderSocket] No orderToken found. Socket not started."
+      );
+
+      return undefined;
     }
 
-    let socket = null
-    let cancelled = false
-    let retry = 0
-    let reconnectTimer = null
+    let socket = null;
+    let cancelled = false;
+    let retry = 0;
+    let reconnectTimer = null;
 
     const connect = () => {
-      if (cancelled) return
+      if (cancelled) {
+        return;
+      }
 
-      const encodedPhone = encodeURIComponent(encryptedPhone)
+      const encodedToken =
+        encodeURIComponent(
+          orderToken
+        );
 
+      /*
+       * IMPORTANT
+       *
+       * Backend routing:
+       *
+       * ws/orders/
+       *
+       * Therefore:
+       *
+       * ws://127.0.0.1:8000/ws/orders/?token=...
+       */
       const socketUrl =
-        `${WS_BASE_URL}/orders/?encryptedPhone=${encodedPhone}`
+        `${WS_BASE_URL}/orders/?token=${encodedToken}`;
 
-      console.log('[useOrderSocket] Connecting:', socketUrl)
+      console.log(
+        "[useOrderSocket] Connecting:",
+        socketUrl
+      );
 
-      socket = new WebSocket(socketUrl)
+      socket =
+        new WebSocket(socketUrl);
+
+      /*
+       * ----------------------------------------
+       * CONNECTED
+       * ----------------------------------------
+       */
 
       socket.onopen = () => {
-        console.log('[useOrderSocket] Connected')
-        retry = 0
-      }
+        console.log(
+          "[useOrderSocket] Connected"
+        );
 
-      socket.onmessage = (event) => {
+        retry = 0;
+      };
+
+      /*
+       * ----------------------------------------
+       * MESSAGE
+       * ----------------------------------------
+       */
+
+      socket.onmessage = (
+        event
+      ) => {
         try {
-          const data = JSON.parse(event.data)
+          const data =
+            JSON.parse(
+              event.data
+            );
 
           console.log(
-            '[useOrderSocket] Order update received:',
+            "[useOrderSocket] Message received:",
             data
-          )
+          );
 
-          onMessageRef.current?.(data)
+          /*
+           * Pass message to Orders.jsx
+           */
+          onMessageRef.current?.(
+            data
+          );
         } catch (error) {
           console.warn(
-            '[useOrderSocket] Invalid WebSocket message:',
+            "[useOrderSocket] Invalid WebSocket message:",
             error
-          )
+          );
         }
-      }
+      };
 
-      socket.onerror = (error) => {
-        console.warn('[useOrderSocket] WebSocket error:', error)
-      }
+      /*
+       * ----------------------------------------
+       * ERROR
+       * ----------------------------------------
+       */
 
-      socket.onclose = (event) => {
+      socket.onerror = (
+        error
+      ) => {
+        console.warn(
+          "[useOrderSocket] WebSocket error:",
+          error
+        );
+      };
+
+      /*
+       * ----------------------------------------
+       * CLOSED
+       * ----------------------------------------
+       */
+
+      socket.onclose = (
+        event
+      ) => {
         console.log(
-          '[useOrderSocket] Socket closed:',
+          "[useOrderSocket] Socket closed:",
           event.code,
           event.reason
-        )
+        );
 
-        if (cancelled) return
-
-        // Authentication / invalid encrypted phone
-        // Do not endlessly reconnect.
-        if (event.code === 4401 || event.code === 4403) {
-          console.warn(
-            '[useOrderSocket] Authentication failed. Socket stopped.'
-          )
-          return
+        if (cancelled) {
+          return;
         }
 
-        // Exponential reconnect
-        const delay = Math.min(
-          1000 * 2 ** retry,
-          15000
-        )
+        /*
+         * Invalid / expired token
+         */
+        if (
+          event.code === 4401 ||
+          event.code === 4403
+        ) {
+          console.warn(
+            "[useOrderSocket] Authentication failed. Socket stopped."
+          );
 
-        retry += 1
+          return;
+        }
+
+        /*
+         * Reconnect
+         */
+        const delay =
+          Math.min(
+            1000 *
+              2 ** retry,
+            15000
+          );
+
+        retry += 1;
 
         console.log(
           `[useOrderSocket] Reconnecting in ${delay}ms...`
-        )
+        );
 
-        reconnectTimer = setTimeout(connect, delay)
-      }
-    }
+        reconnectTimer =
+          setTimeout(
+            connect,
+            delay
+          );
+      };
+    };
 
-    connect()
+    connect();
 
+    /*
+     * Cleanup
+     */
     return () => {
-      cancelled = true
+      cancelled = true;
 
-      if (reconnectTimer) {
-        clearTimeout(reconnectTimer)
+      if (
+        reconnectTimer
+      ) {
+        clearTimeout(
+          reconnectTimer
+        );
       }
 
-      socket?.close()
-    }
-  }, [])
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, []);
 }
